@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced ROP Optimization - Mining Engineering Tool</title>
+    
+    <meta name="author" content="Mining Engineering ROP Predictor">
+    <meta name="description" content="Advanced data-driven ROP prediction tool with multiple bit types and comprehensive operational parameters for drilling optimization.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-bg-primary: #0d1117;
+            --color-bg-secondary: #161b22;
+            --color-bg-tertiary: #1f242c;
+            --color-border: #30363d;
+            --color-text-primary: #c9d1d9;
+            --color-text-secondary: #8b949e;
+            --color-accent-blue: #58a6ff;
+            --color-accent-green: #38a169;
+            --color-accent-yellow: #fbbf24;
+            --color-accent-red: #f87171;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+        }
+
+        .card {
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-field, .select-field {
+            border: 1px solid var(--color-border);
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus, .select-field:focus {
+            border-color: var(--color-accent-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .result-box {
+            background-color: var(--color-bg-primary);
+            border-left: 5px solid var(--color-accent-green);
+        }
+
+        .feature-box {
+            border: 1px solid var(--color-border);
+            background-color: var(--color-bg-tertiary);
+        }
+
+        .section-header {
+            color: var(--color-accent-yellow);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .bit-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-dth { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-top-hammer { background-color: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .badge-diamond { background-color: rgba(168, 85, 247, 0.2); color: #a78bfa; }
+        .badge-rotary { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: var(--color-accent-blue);
+            margin-left: 0.25rem;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, var(--color-accent-blue) 0%, #3b82f6 100%);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(88, 166, 255, 0.4);
+        }
+
+        .btn-reset {
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-reset:hover {
+            background-color: var(--color-border);
+        }
+
+        .error-message {
+            background-color: rgba(248, 113, 113, 0.1);
+            border-left: 4px solid var(--color-accent-red);
+            color: var(--color-accent-red);
+        }
+
+        .success-message {
+            background-color: rgba(56, 161, 105, 0.1);
+            border-left: 4px solid var(--color-accent-green);
+            color: var(--color-accent-green);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 py-8">
+
+    <div id="app" class="card max-w-7xl mx-auto p-6 md:p-10 rounded-2xl space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center pb-6 border-b border-gray-700/50">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#58a6ff] mb-2">Advanced ROP Optimization Engine</h1>
+            <p class="text-lg md:text-xl text-gray-400">Machine Learning Model for Multi-Type Drilling Systems</p>
+            <p class="text-sm text-gray-500 mt-2">Predictive analytics for DTH, Top Hammer, Diamond, and Rotary Percussive drilling</p>
+        </header>
+
+        <!-- Bit Type Selection -->
+        <section class="p-6 feature-box rounded-xl shadow-lg">
+            <h2 class="text-xl font-semibold section-header pb-3 mb-4">Drilling System Selection</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="bit-type" value="dth" class="peer sr-only" checked onchange="updateBitType()">
+                    <div class="p-4 border-2 border-gray-600 rounded-lg peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition-all">
+                        <span class="bit-type-badge badge-dth block mb-2">DTH</span>
+                        <p class="text-sm text-gray-400">Down-The-Hole</p>
+                    </div>
+                </label>
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="bit-type" value="top-hammer" class="peer sr-only" onchange="updateBitType()">
+                    <div class="p-4 border-2 border-gray-600 rounded-lg peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 transition-all">
+                        <span class="bit-type-badge badge-top-hammer block mb-2">Top Hammer</span>
+                        <p class="text-sm text-gray-400">Surface Percussion</p>
+                    </div>
+                </label>
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="bit-type" value="diamond" class="peer sr-only" onchange="updateBitType()">
+                    <div class="p-4 border-2 border-gray-600 rounded-lg peer-checked:border-purple-500 peer-checked:bg-purple-500/10 transition-all">
+                        <span class="bit-type-badge badge-diamond block mb-2">Diamond</span>
+                        <p class="text-sm text-gray-400">Core Drilling</p>
+                    </div>
+                </label>
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="bit-type" value="rotary-percussive" class="peer sr-only" onchange="updateBitType()">
+                    <div class="p-4 border-2 border-gray-600 rounded-lg peer-checked:border-green-500 peer-checked:bg-green-500/10 transition-all">
+                        <span class="bit-type-badge badge-rotary block mb-2">Rotary Percussive</span>
+                        <p class="text-sm text-gray-400">Combined Action</p>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Input Parameters -->
+            <section class="lg:col-span-2 p-6 feature-box rounded-xl shadow-lg space-y-6">
+                <h2 class="text-xl font-semibold section-header pb-3">Operational Input Parameters</h2>
+                
+                <!-- Basic Drilling Parameters -->
+                <div>
+                    <h3 class="text-md font-semibold text-blue-400 mb-3">Basic Drilling Parameters</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="flex flex-col">
+                            <label for="Pi_kW" class="text-sm font-medium text-gray-300 mb-1">
+                                Power (P<sub>i</sub>) <span class="text-gray-500">kW</span>
+                            </label>
+                            <input type="number" id="Pi_kW" value="45" min="1" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Db_mm" class="text-sm font-medium text-gray-300 mb-1">
+                                Diameter (D<sub>b</sub>) <span class="text-gray-500">mm</span>
+                            </label>
+                            <input type="number" id="Db_mm" value="115" min="1" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="FT_kN" class="text-sm font-medium text-gray-300 mb-1">
+                                Thrust (F<sub>T</sub>) <span class="text-gray-500">kN</span>
+                            </label>
+                            <input type="number" id="FT_kN" value="15" min="0.1" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Omega_RPM" class="text-sm font-medium text-gray-300 mb-1">
+                                Rotation (ω) <span class="text-gray-500">RPM</span>
+                            </label>
+                            <input type="number" id="Omega_RPM" value="120" min="0" step="1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Torque_Nm" class="text-sm font-medium text-gray-300 mb-1">
+                                Torque (T) <span class="text-gray-500">N·m</span>
+                            </label>
+                            <input type="number" id="Torque_Nm" value="2500" min="0" step="10" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Percussion_Freq" class="text-sm font-medium text-gray-300 mb-1">
+                                Percussion <span class="text-gray-500">Hz</span>
+                            </label>
+                            <input type="number" id="Percussion_Freq" value="50" min="0" step="1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rock Properties -->
+                <div>
+                    <h3 class="text-md font-semibold text-blue-400 mb-3">Rock Properties</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="flex flex-col">
+                            <label for="SigmaC_MPa" class="text-sm font-medium text-gray-300 mb-1">
+                                UCS (σ<sub>c</sub>) <span class="text-gray-500">MPa</span>
+                            </label>
+                            <input type="number" id="SigmaC_MPa" value="80" min="0.1" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Rock_Density" class="text-sm font-medium text-gray-300 mb-1">
+                                Density (ρ) <span class="text-gray-500">kg/m³</span>
+                            </label>
+                            <input type="number" id="Rock_Density" value="2650" min="1000" step="10" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Abrasivity" class="text-sm font-medium text-gray-300 mb-1">
+                                Abrasivity <span class="text-gray-500">CAI</span>
+                            </label>
+                            <input type="number" id="Abrasivity" value="2.5" min="0" max="10" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Porosity" class="text-sm font-medium text-gray-300 mb-1">
+                                Porosity <span class="text-gray-500">%</span>
+                            </label>
+                            <input type="number" id="Porosity" value="5" min="0" max="100" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Hardness" class="text-sm font-medium text-gray-300 mb-1">
+                                Hardness <span class="text-gray-500">Shore</span>
+                            </label>
+                            <input type="number" id="Hardness" value="70" min="0" max="100" step="1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Fracture_Toughness" class="text-sm font-medium text-gray-300 mb-1">
+                                Toughness <span class="text-gray-500">MPa·m½</span>
+                            </label>
+                            <input type="number" id="Fracture_Toughness" value="2.0" min="0" step="0.1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operational Conditions -->
+                <div>
+                    <h3 class="text-md font-semibold text-blue-400 mb-3">Operational Conditions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="flex flex-col">
+                            <label for="Wear_Index" class="text-sm font-medium text-gray-300 mb-1">
+                                Bit Wear <span class="text-gray-500">0-1</span>
+                            </label>
+                            <input type="number" id="Wear_Index" value="0.3" min="0" max="1" step="0.01" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Flushing_Pressure" class="text-sm font-medium text-gray-300 mb-1">
+                                Flushing <span class="text-gray-500">bar</span>
+                            </label>
+                            <input type="number" id="Flushing_Pressure" value="20" min="0" step="0.5" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Air_Flow" class="text-sm font-medium text-gray-300 mb-1">
+                                Air Flow <span class="text-gray-500">m³/min</span>
+                            </label>
+                            <input type="number" id="Air_Flow" value="25" min="0" step="0.5" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Hole_Depth" class="text-sm font-medium text-gray-300 mb-1">
+                                Hole Depth <span class="text-gray-500">m</span>
+                            </label>
+                            <input type="number" id="Hole_Depth" value="50" min="0" step="1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Bit_Life" class="text-sm font-medium text-gray-300 mb-1">
+                                Bit Life <span class="text-gray-500">hours</span>
+                            </label>
+                            <input type="number" id="Bit_Life" value="120" min="0" step="1" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+
+                        <div class="flex flex-col">
+                            <label for="Temperature" class="text-sm font-medium text-gray-300 mb-1">
+                                Temperature <span class="text-gray-500">°C</span>
+                            </label>
+                            <input type="number" id="Temperature" value="25" min="-50" max="100" step="0.5" class="input-field p-2 rounded-lg" oninput="calculateROP()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4 pt-4">
+                    <button onclick="calculateROP()" class="btn-calculate flex-1">
+                        Calculate ROP
+                    </button>
+                    <button onclick="resetForm()" class="btn-reset px-6 py-3 rounded-lg font-medium transition-all">
+                        Reset
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Panel -->
+            <section class="space-y-6">
+                
+                <!-- Error/Success Messages -->
+                <div id="error-message" class="hidden error-message p-4 rounded-lg text-sm"></div>
+                <div id="success-message" class="hidden success-message p-4 rounded-lg text-sm"></div>
+
+                <!-- Predicted ROP -->
+                <div class="result-box p-6 rounded-xl shadow-lg">
+                    <h2 class="text-lg font-semibold text-green-400 mb-3">Predicted ROP</h2>
+                    <div class="text-center">
+                        <div id="rop-result" class="text-5xl font-bold text-white mb-2">--</div>
+                        <div class="text-sm text-gray-400">meters per hour (m/h)</div>
+                        <div id="bit-type-display" class="mt-3">
+                            <span class="bit-type-badge badge-dth">DTH Mode</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Engineered Features -->
+                <div class="p-6 feature-box rounded-xl shadow-lg space-y-4">
+                    <h2 class="text-lg font-semibold text-yellow-400 mb-3">Engineered Features</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Power Density</span>
+                            <span id="power-density-result" class="font-mono text-blue-400 font-semibold">--</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Drillability Index</span>
+                            <span id="drillability-result" class="font-mono text-blue-400 font-semibold">--</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Normalized Thrust</span>
+                            <span id="normalized-thrust-result" class="font-mono text-blue-400 font-semibold">--</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Specific Energy</span>
+                            <span id="specific-energy-result" class="font-mono text-blue-400 font-semibold">--</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Efficiency Index</span>
+                            <span id="efficiency-result" class="font-mono text-blue-400 font-semibold">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="p-6 feature-box rounded-xl shadow-lg space-y-4">
+                    <h2 class="text-lg font-semibold text-purple-400 mb-3">Performance Metrics</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Cost per Meter</span>
+                            <span id="cost-per-meter" class="font-mono text-green-400 font-semibold">--</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Energy Efficiency</span>
+                            <span id="energy-efficiency" class="font-mono text-green-400 font-semibold">--</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center p-3 bg-[#0d1117] rounded-lg">
+                            <span class="text-sm text-gray-400">Bit Life Remaining</span>
+                            <span id="bit-life-remaining" class="font-mono text-yellow-400 font-semibold">--</span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm pt-6 border-t border-gray-700/50">
+            <p>Advanced ROP Optimization Engine v2.0 | Mining Engineering ML Model</p>
+            <p class="mt-1">Multi-parameter predictive analytics for optimized drilling operations</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // Model Coefficients (Different for each bit type)
+        const COEFFICIENTS = {
+            'dth': {
+                B0: 2.5,
+                B1: 15000,    // Power Density coefficient
+                B2: 250,      // Drillability Index coefficient
+                B3: 0.08,     // Normalized Thrust coefficient
+                B4: -8.0,     // Wear Index coefficient (negative impact)
+                B5: 0.012,    // Rotation coefficient
+                B6: 0.0015,   // Torque coefficient
+                B7: 0.05,     // Percussion frequency coefficient
+                B8: -0.0008,  // Rock density coefficient
+                B9: -0.3,     // Abrasivity coefficient
+                B10: 0.02,    // Porosity coefficient
+                B11: 0.015    // Flushing pressure coefficient
+            },
+            'top-hammer': {
+                B0: 1.8,
+                B1: 12000,
+                B2: 200,
+                B3: 0.10,
+                B4: -10.0,
+                B5: 0.010,
+                B6: 0.0012,
+                B7: 0.08,
+                B8: -0.0010,
+                B9: -0.4,
+                B10: 0.015,
+                B11: 0.012
+            },
+            'diamond': {
+                B0: 3.2,
+                B1: 18000,
+                B2: 300,
+                B3: 0.06,
+                B4: -6.0,
+                B5: 0.015,
+                B6: 0.0020,
+                B7: 0.02,
+                B8: -0.0006,
+                B9: -0.5,
+                B10: 0.025,
+                B11: 0.020
+            },
+            'rotary-percussive': {
+                B0: 2.2,
+                B1: 16000,
+                B2: 280,
+                B3: 0.09,
+                B4: -9.0,
+                B5: 0.013,
+                B6: 0.0018,
+                B7: 0.06,
+                B8: -0.0009,
+                B9: -0.35,
+                B10: 0.018,
+                B11: 0.018
+            }
+        };
+
+        let currentBitType = 'dth';
+
+        function getInputValue(id) {
+            const value = parseFloat(document.getElementById(id).value);
+            return isNaN(value) ? null : value;
+        }
+
+        function updateBitType() {
+            const selected = document.querySelector('input[name="bit-type"]:checked');
+            currentBitType = selected.value;
+            
+            // Update display badge
+            const badges = {
+                'dth': '<span class="bit-type-badge badge-dth">DTH Mode</span>',
+                'top-hammer': '<span class="bit-type-badge badge-top-hammer">Top Hammer Mode</span>',
+                'diamond': '<span class="bit-type-badge badge-diamond">Diamond Mode</span>',
+                'rotary-percussive': '<span class="bit-type-badge badge-rotary">Rotary Percussive Mode</span>'
+            };
+            document.getElementById('bit-type-display').innerHTML = badges[currentBitType];
+            
+            // Recalculate with new bit type
+            calculateROP();
+        }
+
+        function calculateROP() {
+            const errorMsg = document.getElementById('error-message');
+            const successMsg = document.getElementById('success-message');
+            errorMsg.classList.add('hidden');
+            successMsg.classList.add('hidden');
+            
+            // Get all input values
+            const Pi_kW = getInputValue('Pi_kW');
+            const Db_mm = getInputValue('Db_mm');
+            const FT_kN = getInputValue('FT_kN');
+            const SigmaC_MPa = getInputValue('SigmaC_MPa');
+            const Wear_Index = getInputValue('Wear_Index');
+            const Omega_RPM = getInputValue('Omega_RPM');
+            const Torque_Nm = getInputValue('Torque_Nm');
+            const Percussion_Freq = getInputValue('Percussion_Freq');
+            const Rock_Density = getInputValue('Rock_Density');
+            const Abrasivity = getInputValue('Abrasivity');
+            const Porosity = getInputValue('Porosity');
+            const Hardness = getInputValue('Hardness');
+            const Fracture_Toughness = getInputValue('Fracture_Toughness');
+            const Flushing_Pressure = getInputValue('Flushing_Pressure');
+            const Air_Flow = getInputValue('Air_Flow');
+            const Hole_Depth = getInputValue('Hole_Depth');
+            const Bit_Life = getInputValue('Bit_Life');
+            const Temperature = getInputValue('Temperature');
+
+            // Set default display
+            document.getElementById('rop-result').textContent = '--';
+            document.getElementById('power-density-result').textContent = '--';
+            document.getElementById('drillability-result').textContent = '--';
+            document.getElementById('normalized-thrust-result').textContent = '--';
+            document.getElementById('specific-energy-result').textContent = '--';
+            document.getElementById('efficiency-result').textContent = '--';
+            document.getElementById('cost-per-meter').textContent = '--';
+            document.getElementById('energy-efficiency').textContent = '--';
+            document.getElementById('bit-life-remaining').textContent = '--';
+
+            // Validation
+            if (!Pi_kW || !Db_mm || !FT_kN || !SigmaC_MPa || Wear_Index === null || !Omega_RPM || 
+                SigmaC_MPa === 0 || Db_mm === 0) {
+                errorMsg.textContent = 'ERROR: Please fill all required fields with valid positive numbers.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            // Feature Engineering
+            const Power_Density = Pi_kW / (Db_mm * Db_mm);
+            const Drillability_Index = 1 / SigmaC_MPa;
+            const Normalized_Thrust = FT_kN / Db_mm;
+            
+            // Get coefficients for selected bit type
+            const coef = COEFFICIENTS[currentBitType];
+            
+            // Calculate ROP using ML model
+            let predicted_ROP = coef.B0;
+            predicted_ROP += coef.B1 * Power_Density;
+            predicted_ROP += coef.B2 * Drillability_Index;
+            predicted_ROP += coef.B3 * Normalized_Thrust;
+            predicted_ROP += coef.B4 * Wear_Index;
+            predicted_ROP += coef.B5 * Omega_RPM;
+            
+            if (Torque_Nm) predicted_ROP += coef.B6 * Torque_Nm;
+            if (Percussion_Freq) predicted_ROP += coef.B7 * Percussion_Freq;
+            if (Rock_Density) predicted_ROP += coef.B8 * Rock_Density;
+            if (Abrasivity) predicted_ROP += coef.B9 * Abrasivity;
+            if (Porosity) predicted_ROP += coef.B10 * Porosity;
+            if (Flushing_Pressure) predicted_ROP += coef.B11 * Flushing_Pressure;
+            
+            // Apply physical constraints
+            predicted_ROP = Math.max(0.1, Math.min(predicted_ROP, 100));
+            
+            // Calculate additional metrics
+            const Specific_Energy = (Pi_kW * 1000) / (predicted_ROP / 60); // kJ/m
+            const Efficiency_Index = (predicted_ROP * Db_mm) / (Pi_kW * (1 + Wear_Index));
+            
+            // Performance metrics
+            const Cost_Per_Meter = ((Pi_kW * 0.12) + (Bit_Life > 0 ? 500/Bit_Life : 0)) / predicted_ROP; // Estimated cost
+            const Energy_Efficiency = (predicted_ROP / Pi_kW) * 100; // m/h per kW
+            const Bit_Life_Remaining = Math.max(0, 100 - (Wear_Index * 100)); // percentage
+            
+            // Update displays
+            document.getElementById('rop-result').textContent = predicted_ROP.toFixed(2);
+            document.getElementById('power-density-result').textContent = (Power_Density * 1e6).toFixed(4) + ' kW/mm²';
+            document.getElementById('drillability-result').textContent = Drillability_Index.toFixed(5) + ' MPa⁻¹';
+            document.getElementById('normalized-thrust-result').textContent = Normalized_Thrust.toFixed(3) + ' kN/mm';
+            document.getElementById('specific-energy-result').textContent = Specific_Energy.toFixed(1) + ' kJ/m';
+            document.getElementById('efficiency-result').textContent = Efficiency_Index.toFixed(3);
+            document.getElementById('cost-per-meter').textContent = '$' + Cost_Per_Meter.toFixed(2);
+            document.getElementById('energy-efficiency').textContent = Energy_Efficiency.toFixed(2) + ' %';
+            document.getElementById('bit-life-remaining').textContent = Bit_Life_Remaining.toFixed(0) + ' %';
+            
+            // Show success message
+            successMsg.textContent = 'ROP calculated successfully for ' + currentBitType.toUpperCase() + ' drilling system';
+            successMsg.classList.remove('hidden');
+        }
+
+        function resetForm() {
+            document.getElementById('Pi_kW').value = 45;
+            document.getElementById('Db_mm').value = 115;
+            document.getElementById('FT_kN').value = 15;
+            document.getElementById('SigmaC_MPa').value = 80;
+            document.getElementById('Wear_Index').value = 0.3;
+            document.getElementById('Omega_RPM').value = 120;
+            document.getElementById('Torque_Nm').value = 2500;
+            document.getElementById('Percussion_Freq').value = 50;
+            document.getElementById('Rock_Density').value = 2650;
+            document.getElementById('Abrasivity').value = 2.5;
+            document.getElementById('Porosity').value = 5;
+            document.getElementById('Hardness').value = 70;
+            document.getElementById('Fracture_Toughness').value = 2.0;
+            document.getElementById('Flushing_Pressure').value = 20;
+            document.getElementById('Air_Flow').value = 25;
+            document.getElementById('Hole_Depth').value = 50;
+            document.getElementById('Bit_Life').value = 120;
+            document.getElementById('Temperature').value = 25;
+            
+            document.getElementById('error-message').classList.add('hidden');
+            document.getElementById('success-message').classList.add('hidden');
+            
+            calculateROP();
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            calculateROP();
+        };
+    </script>
+
+</body>
+</html>
+
